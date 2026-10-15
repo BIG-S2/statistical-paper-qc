@@ -1,0 +1,29 @@
+# Local agent and environment settings
+.agents/
+.codex/
+.aws/
+.env
+.env.*
+!.env.example
+
+# Confidential inputs and generated audit materials
+/private/
+/manuscripts/
+/data/
+/reports/
+/outputs/
+/tmp/
+
+# Python environments and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Editor and operating-system files
+.DS_Store
+Thumbs.db
+*.swp
+*~
