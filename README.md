@@ -29,7 +29,9 @@ This is a skill-driven review workflow, not a standalone automated validator. Fi
 
 ## Getting started
 
-### 1. Install in Claude
+### 1. Install the skill
+
+#### Claude (web or desktop app)
 
 1. Download [jasa-acs-qc.skill](jasa-acs-qc.skill) using GitHub's **Download raw file** button. This is already a ZIP archive containing `jasa-acs-qc/SKILL.md`; save a copy named `jasa-acs-qc.zip`. Do not upload the ZIP of the entire repository.
 2. Enable **Code execution and file creation** in Claude's **Settings > Capabilities**. For managed accounts, the organization must allow code execution and custom skills.
@@ -44,6 +46,28 @@ If you have cloned the repository, make the uploadable copy with:
 cp jasa-acs-qc.skill jasa-acs-qc.zip
 ```
 
+#### Claude Code
+
+Claude Code loads skills from folders on disk; no upload is needed. From the root of a clone of this repository, install the skill for your user account:
+
+```bash
+mkdir -p ~/.claude/skills
+cp -r skills/jasa-acs-qc ~/.claude/skills/
+```
+
+To have the installed skill follow `git pull` and local edits, link it instead of copying:
+
+```bash
+mkdir -p ~/.claude/skills
+ln -s "$PWD/skills/jasa-acs-qc" ~/.claude/skills/jasa-acs-qc
+```
+
+To make the skill available in one project only, place the folder at `<project>/.claude/skills/jasa-acs-qc/` instead.
+
+Claude Code picks up new skills without a restart. If `~/.claude/skills/` did not exist when the session started, run `/reload-skills`. To confirm the installation, type `/` in a session and look for `jasa-acs-qc` in the menu.
+
+These steps follow the [Claude Code skills documentation](https://code.claude.com/docs/en/skills), checked on 2026-10-15.
+
 ### 2. Prepare the inputs
 
 | Input | Required? | Details |
@@ -53,7 +77,7 @@ cp jasa-acs-qc.skill jasa-acs-qc.zip
 | Manuscript ID | Optional | Used to identify the report; e.g. `EXAMPLE-001`. |
 | Scope | Optional | Specify modules, sections, tables, or theorems to check. |
 
-Use material you are authorized to process in the chosen environment. For a first trial, use a public or synthetic manuscript. Supply the PDFs in the conversation, or accessible local file paths when using an agent with filesystem access.
+Use material you are authorized to process in the chosen environment. For a first trial, use a public or synthetic manuscript. Supply the PDFs in the conversation, or accessible local file paths when using Claude Code or another agent with filesystem access.
 
 ### 3. Request an audit
 
@@ -79,6 +103,30 @@ Use jasa-acs-qc to check Theorems 1–3 against their supplementary proofs.
 Report errors, gaps, typographic defects, and verified steps separately.
 ```
 
+#### Running in Claude Code
+
+1. Put the PDFs in a working folder outside this repository, or in the repository's ignored `private/` directory.
+2. Check the local tools. Claude Code runs commands on your machine, so Poppler, NumPy, and python-docx must be available there; see [Runtime requirements](#runtime-requirements-and-troubleshooting). If you use a virtual environment, give Claude its interpreter path in the prompt.
+3. Start Claude Code in the working folder:
+
+   ```bash
+   cd /path/to/review-folder
+   claude
+   ```
+
+4. Invoke the skill with `/jasa-acs-qc` followed by the request, or start the prompt with `Use jasa-acs-qc` as in the examples above:
+
+   ```text
+   /jasa-acs-qc Audit main.pdf and supp.pdf in this folder. ID: EXAMPLE-001.
+   Run Modules A, B, and D; skip the journal-specific ACS structure module.
+   For Python steps, use /path/to/.venv/bin/python.
+   Produce EXAMPLE-001_QC_report.docx in this folder.
+   ```
+
+5. Claude Code asks for permission before running shell commands such as `pdftotext`, `pdftoppm`, and `python`. Review each command before approving it.
+
+The report is saved in the working folder, next to the manuscript. Claude Code runs the tools locally, but the text and page images it reads are sent to the model; see [Confidential material](#confidential-material).
+
 ### 4. Retrieve and review the report
 
 The expected output is `<ID>_QC_report.docx`, containing files audited, page numbering, severity counts, findings with precise locations and suggested fixes, verified checks, revision priorities, and a methods note. Request a downloadable file in a hosted session; with filesystem access, the skill specifies saving it beside the manuscript.
@@ -103,7 +151,7 @@ Poppler is a separate system dependency; check availability with `pdftotext -v` 
 | --- | --- |
 | No supplement | Request main-only checks and have the report identify skipped cross-document checks. |
 | Scanned PDF | Obtain OCR text or a searchable PDF; still inspect page images before asserting equation errors. |
-| Skill not invoked | Confirm it is enabled and explicitly say `Use jasa-acs-qc` in the prompt. |
+| Skill not invoked | Confirm it is enabled and explicitly say `Use jasa-acs-qc` in the prompt. In Claude Code, check that `~/.claude/skills/jasa-acs-qc/SKILL.md` exists and invoke `/jasa-acs-qc` directly. |
 | Large manuscript or appendix | Start with named tables or theorems and continue in batches; track what remains unchecked. |
 | A tool or dependency is unavailable | Ask for the limitation and affected checks to be recorded; do not label unperformed checks as verified. |
 | A finding seems incorrect | Ask for the exact page image, assumptions, and numerical reproduction. |
@@ -132,6 +180,8 @@ with ZipFile("jasa-acs-qc.skill", "w", compression=ZIP_DEFLATED) as archive:
     archive.write(source, "jasa-acs-qc/SKILL.md")
 PY
 ```
+
+A Claude Code installation made by copying does not follow these edits; copy the folder again, or use the linked installation described in [Claude Code](#claude-code). In the Claude apps, upload the rebuilt archive.
 
 ## Confidential material
 
