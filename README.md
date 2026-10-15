@@ -81,6 +81,8 @@ Use material you are authorized to process in the chosen environment. For a firs
 
 ### 3. Request an audit
 
+Use Claude Opus 5.5 or a more capable model, such as Claude Fable 5.1, with at least high reasoning effort; proof checks and numerical recomputation depend on long chains of careful reasoning. In the Claude apps, choose the model in the model selector before starting the conversation. For Claude Code, see [Running in Claude Code](#running-in-claude-code). Model names are current as of 2026-10-15.
+
 For a statistics paper outside JASA ACS, start with:
 
 ```text
@@ -107,12 +109,14 @@ Report errors, gaps, typographic defects, and verified steps separately.
 
 1. Put the PDFs in a working folder outside this repository, or in the repository's ignored `private/` directory.
 2. Check the local tools. Claude Code runs commands on your machine, so Poppler, NumPy, and python-docx must be available there; see [Runtime requirements](#runtime-requirements-and-troubleshooting). If you use a virtual environment, give Claude its interpreter path in the prompt.
-3. Start Claude Code in the working folder:
+3. Start Claude Code in the working folder with a suitable model and effort level:
 
    ```bash
    cd /path/to/review-folder
-   claude
+   claude --model opus --effort high
    ```
+
+   Use `--model fable` for the more capable Fable model where your plan or provider offers it. In a running session, switch with `/model` and `/effort`; `/model` without an argument opens the model picker and shows the active model.
 
 4. Invoke the skill with `/jasa-acs-qc` followed by the request, or start the prompt with `Use jasa-acs-qc` as in the examples above:
 
